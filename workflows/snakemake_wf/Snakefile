@@ -1,0 +1,159 @@
+"""
+Snakemake workflow for tldr - Transposable Element Detection from Long Reads
+Uses Singularity/Apptainer container for reproducible execution
+"""
+
+import pandas as pd
+from pathlib import Path
+
+# Load configuration
+configfile: "config.yaml"
+
+# Load samples from TSV file
+samples_df = pd.read_csv(config["samples"], sep="\t")
+SAMPLES = samples_df["sample"].tolist()
+
+# Container image - will be pulled from DockerHub
+container: config.get("container", "docker://sahuno/tldr:latest")
+
+# Output directory
+OUTDIR = config.get("outdir", "results")
+
+# ================================================================================
+# Target Rules
+# ================================================================================
+
+rule all:
+    input:
+        expand(f"{OUTDIR}/{{sample}}/{{sample}}.table.txt", sample=SAMPLES),
+        f"{OUTDIR}/summary/all_samples.merged.txt"
+
+# ================================================================================
+# tldr Detection Rules
+# ================================================================================
+
+rule tldr_detect:
+    """
+    Run tldr transposable element detection on each sample
+    """
+    input:
+        bam = lambda wildcards: samples_df[samples_df["sample"] == wildcards.sample]["bam"].values[0],
+        bai = lambda wildcards: samples_df[samples_df["sample"] == wildcards.sample]["bam"].values[0] + ".bai",
+        ref = config["reference_genome"]
+    output:
+        table = f"{OUTDIR}/{{sample}}/{{sample}}.table.txt",
+        log = f"{OUTDIR}/{{sample}}/{{sample}}.tldr.log"
+    params:
+        te_ref = config.get("te_reference", "/opt/tldr/ref/teref.ont.human.fa"),
+        nonref = lambda wildcards: f"-n {config['nonref_collection']}" if config.get('nonref_collection') else "",
+        extra = config.get("tldr_params", ""),
+        outbase = lambda wildcards: f"{OUTDIR}/{wildcards.sample}/{wildcards.sample}",
+        procs = config.get("threads", 4)
+    threads: config.get("threads", 4)
+    resources:
+        mem_mb = config.get("memory_mb", 16000),
+        runtime = config.get("runtime_min", 240)
+    log:
+        f"{OUTDIR}/logs/{{sample}}.tldr.log"
+    shell:
+        """
+        tldr \
+            -b {input.bam} \
+            -e {params.te_ref} \
+            -r {input.ref} \
+            -o {params.outbase} \
+            -p {threads} \
+            {params.nonref} \
+            {params.extra} \
+            --color_consensus \
+            2>&1 | tee {log}
+
+        # Copy log to output directory
+        cp {log} {output.log}
+        """
+
+rule index_bam:
+    """
+    Index BAM file if index doesn't exist
+    """
+    input:
+        bam = "{file}.bam"
+    output:
+        bai = "{file}.bam.bai"
+    threads: 1
+    shell:
+        """
+        samtools index {input.bam}
+        """
+
+# ================================================================================
+# Summary and Reporting Rules
+# ================================================================================
+
+rule merge_results:
+    """
+    Merge all tldr results into a single table
+    """
+    input:
+        tables = expand(f"{OUTDIR}/{{sample}}/{{sample}}.table.txt", sample=SAMPLES)
+    output:
+        merged = f"{OUTDIR}/summary/all_samples.merged.txt"
+    params:
+        samples = SAMPLES
+    run:
+        import pandas as pd
+
+        dfs = []
+        for sample, table in zip(params.samples, input.tables):
+            df = pd.read_csv(table, sep="\t")
+            df.insert(0, "Sample", sample)
+            dfs.append(df)
+
+        merged_df = pd.concat(dfs, ignore_index=True)
+        merged_df.to_csv(output.merged, sep="\t", index=False)
+
+rule summary_stats:
+    """
+    Generate summary statistics across all samples
+    """
+    input:
+        merged = f"{OUTDIR}/summary/all_samples.merged.txt"
+    output:
+        stats = f"{OUTDIR}/summary/summary_stats.txt",
+        counts = f"{OUTDIR}/summary/insertion_counts_per_sample.txt"
+    run:
+        import pandas as pd
+
+        df = pd.read_csv(input.merged, sep="\t")
+
+        # Summary statistics
+        with open(output.stats, "w") as f:
+            f.write("=== tldr Summary Statistics ===\n\n")
+            f.write(f"Total samples: {df['Sample'].nunique()}\n")
+            f.write(f"Total insertions detected: {len(df)}\n")
+            f.write(f"Unique chromosomes: {df['Chrom'].nunique()}\n\n")
+
+            f.write("Insertions by TE Family:\n")
+            family_counts = df['Family'].value_counts()
+            for family, count in family_counts.items():
+                f.write(f"  {family}: {count}\n")
+
+            f.write("\nInsertions by TE Subfamily:\n")
+            subfamily_counts = df['Subfamily'].value_counts().head(10)
+            for subfamily, count in subfamily_counts.items():
+                f.write(f"  {subfamily}: {count}\n")
+
+        # Per-sample insertion counts
+        sample_counts = df.groupby('Sample').size().reset_index(name='InsertionCount')
+        sample_counts.to_csv(output.counts, sep="\t", index=False)
+
+# ================================================================================
+# Utility Rules
+# ================================================================================
+
+rule clean:
+    """
+    Remove output directory
+    """
+    shell:
+        f"rm -rf {OUTDIR}"

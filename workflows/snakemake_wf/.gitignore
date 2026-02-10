@@ -1,0 +1,25 @@
+# Snakemake workflow gitignore
+
+# Results directory
+results/
+
+# Logs
+logs/
+.snakemake/
+
+# Singularity images
+*.sif
+*.simg
+
+# Temporary files
+.snakemake*
+*.pyc
+__pycache__/
+
+# Cluster logs
+slurm-*.out
+*.err
+*.out
+
+# Benchmarks
+benchmarks/

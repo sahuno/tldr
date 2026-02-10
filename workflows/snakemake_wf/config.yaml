@@ -1,0 +1,79 @@
+# ================================================================================
+# tldr Snakemake Workflow Configuration
+# ================================================================================
+
+# Samples file (TSV format with columns: sample, bam)
+samples: "samples.tsv"
+
+# Output directory for results
+outdir: "results"
+
+# ================================================================================
+# Reference Files
+# ================================================================================
+
+# Reference genome (FASTA, must be indexed with samtools faidx)
+reference_genome: "/path/to/reference/genome.fa"
+
+# TE reference file
+# Options:
+#   - /opt/tldr/ref/teref.ont.human.fa  (ONT-optimized human)
+#   - /opt/tldr/ref/teref.human.fa      (standard human)
+#   - /opt/tldr/ref/teref.mouse.fa      (mouse)
+te_reference: "/opt/tldr/ref/teref.ont.human.fa"
+
+# Non-reference collection (optional)
+# Set to null or comment out if not using
+# Options:
+#   - /opt/tldr/ref/nonref.collection.hg38.chr.bed.gz
+#   - /opt/tldr/ref/nonref.collection.hg38.bed.gz
+#   - /opt/tldr/ref/nonref.collection.hg19.chr.bed.gz
+#   - /opt/tldr/ref/nonref.collection.hg19.bed.gz
+#   - /opt/tldr/ref/nonref.collection.mm10.chr.bed.gz
+#   - /opt/tldr/ref/nonref.collection.mm10.bed.gz
+nonref_collection: null  # "/opt/tldr/ref/nonref.collection.hg38.chr.bed.gz"
+
+# ================================================================================
+# Container Settings
+# ================================================================================
+
+# Docker/Singularity container image
+# Will be pulled from DockerHub automatically
+container: "docker://sahuno/tldr:latest"
+
+# ================================================================================
+# Computational Resources
+# ================================================================================
+
+# Number of threads per tldr job
+threads: 4
+
+# Memory per job (MB)
+memory_mb: 16000
+
+# Runtime per job (minutes)
+runtime_min: 240
+
+# ================================================================================
+# tldr Parameters
+# ================================================================================
+
+# Additional tldr parameters
+# Examples:
+#   --minreads 3              # Minimum read count to form cluster
+#   --min_te_len 200          # Minimum insertion size
+#   --max_te_len 10000        # Maximum insertion size
+#   --detail_output           # Output per-insertion BAMs
+#   --strict                  # Additional filters
+#   --somatic                 # Predict somatic insertions
+tldr_params: ""
+
+# ================================================================================
+# Workflow Options
+# ================================================================================
+
+# Create summary statistics
+create_summary: true
+
+# Keep intermediate files
+keep_intermediate: false
