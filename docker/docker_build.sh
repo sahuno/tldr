@@ -1,13 +1,18 @@
 #!/bin/bash
 
 # Docker build and push script for tldr
-# Usage: ./docker_build.sh [OPTIONS]
+# Usage: docker/docker_build.sh [OPTIONS]
 #   -u, --username    DockerHub username (default: sahuno)
 #   -t, --tag         Image tag (default: latest)
 #   -p, --push        Push to DockerHub after build
 #   -h, --help        Show this help message
 
 set -e
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Parent directory is the project root
+PROJECT_ROOT="$( cd "${SCRIPT_DIR}/.." && pwd )"
 
 # Default values
 DOCKER_USERNAME="sahuno"
@@ -31,7 +36,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -h|--help)
-            echo "Usage: ./docker_build.sh [OPTIONS]"
+            echo "Usage: docker/docker_build.sh [OPTIONS]"
             echo ""
             echo "Options:"
             echo "  -u, --username    DockerHub username (default: sahuno)"
@@ -40,9 +45,9 @@ while [[ $# -gt 0 ]]; do
             echo "  -h, --help        Show this help message"
             echo ""
             echo "Examples:"
-            echo "  ./docker_build.sh                    # Build only"
-            echo "  ./docker_build.sh -p                 # Build and push"
-            echo "  ./docker_build.sh -t v1.3.0 -p       # Build and push with version tag"
+            echo "  docker/docker_build.sh                    # Build only"
+            echo "  docker/docker_build.sh -p                 # Build and push"
+            echo "  docker/docker_build.sh -t v1.3.0 -p       # Build and push with version tag"
             exit 0
             ;;
         *)
@@ -63,7 +68,7 @@ echo "Image: ${FULL_IMAGE}"
 echo "============================================"
 
 # Get version from setup.py
-VERSION=$(grep "version=" setup.py | sed "s/.*version='\(.*\)'.*/\1/")
+VERSION=$(grep "version=" "${PROJECT_ROOT}/setup.py" | sed "s/.*version='\(.*\)'.*/\1/")
 echo "tldr version: ${VERSION}"
 
 # Build the image
@@ -72,9 +77,10 @@ echo "Building Docker image..."
 docker build \
     --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
     --build-arg VCS_REF=$(git rev-parse --short HEAD) \
+    -f "${SCRIPT_DIR}/Dockerfile" \
     -t "${FULL_IMAGE}" \
     -t "${DOCKER_USERNAME}/${IMAGE_NAME}:${VERSION}" \
-    .
+    "${PROJECT_ROOT}"
 
 echo ""
 echo "✅ Build successful!"
@@ -116,7 +122,7 @@ if [ "$PUSH" = true ]; then
 else
     echo ""
     echo "Build complete. To push to DockerHub, run:"
-    echo "  ./docker_build.sh -p"
+    echo "  docker/docker_build.sh -p"
     echo ""
     echo "Or manually:"
     echo "  docker login"

@@ -9,7 +9,7 @@ docker pull sahuno/tldr:latest
 
 ### Build Locally
 ```bash
-./docker_build.sh
+docker/docker_build.sh
 ```
 
 ### Build and Push to DockerHub
@@ -18,10 +18,10 @@ docker pull sahuno/tldr:latest
 docker login
 
 # Build and push
-./docker_build.sh -p
+docker/docker_build.sh -p
 
 # Or with specific tag
-./docker_build.sh -t v1.3.0 -p
+docker/docker_build.sh -t v1.3.0 -p
 ```
 
 ## Usage Examples
@@ -114,12 +114,12 @@ The container includes:
 
 ### Change DockerHub Username
 ```bash
-./docker_build.sh -u yourusername -p
+docker/docker_build.sh -u yourusername -p
 ```
 
 ### Build Script Options
 ```bash
-./docker_build.sh -h
+docker/docker_build.sh -h
 
 Options:
   -u, --username    DockerHub username (default: sahuno)

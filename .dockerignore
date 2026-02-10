@@ -27,9 +27,7 @@ INSTALLATION_ISSUE.md
 README.md
 
 # Docker files
-Dockerfile
-.dockerignore
-docker_build.sh
+docker/
 
 # IDE
 .vscode/
