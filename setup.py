@@ -74,7 +74,8 @@ setup(
         'pysam>=0.8.1',
         'bx-python>=0.5.0',
         'scikit-learn>=0.20.0',
-        'numpy>=1.9.0'
+        'numpy>=1.9.0',
+        'tqdm'
     ]
 
 )
