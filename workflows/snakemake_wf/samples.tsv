@@ -1,4 +1,4 @@
-sample	bam
-sample1	/path/to/sample1.bam
-sample2	/path/to/sample2.bam
-sample3	/path/to/sample3.bam
+patient	sample	condition	path	genome
+patient1	sample1	control	/path/to/sample1.bam	hg38
+patient2	sample2	case	/path/to/sample2.bam	hg38
+patient3	sample3	control	/path/to/sample3.bam	hg38

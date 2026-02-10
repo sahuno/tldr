@@ -1,6 +1,6 @@
 """
 Snakemake workflow for tldr - Transposable Element Detection from Long Reads
-Uses Singularity/Apptainer container for reproducible execution
+Container-only execution with Singularity/Apptainer
 """
 
 import pandas as pd
@@ -13,11 +13,11 @@ configfile: "config.yaml"
 samples_df = pd.read_csv(config["samples"], sep="\t")
 SAMPLES = samples_df["sample"].tolist()
 
-# Container image - will be pulled from DockerHub
-container: config.get("container", "docker://sahuno/tldr:latest")
-
 # Output directory
 OUTDIR = config.get("outdir", "results")
+
+# Container image
+TLDR_CONTAINER = config.get("container", "docker://sahuno/tldr:latest")
 
 # ================================================================================
 # Target Rules
@@ -26,7 +26,8 @@ OUTDIR = config.get("outdir", "results")
 rule all:
     input:
         expand(f"{OUTDIR}/{{sample}}/{{sample}}.table.txt", sample=SAMPLES),
-        f"{OUTDIR}/summary/all_samples.merged.txt"
+        f"{OUTDIR}/summary/all_samples.merged.txt",
+        f"{OUTDIR}/summary/summary_stats.txt"
 
 # ================================================================================
 # tldr Detection Rules
@@ -37,22 +38,24 @@ rule tldr_detect:
     Run tldr transposable element detection on each sample
     """
     input:
-        bam = lambda wildcards: samples_df[samples_df["sample"] == wildcards.sample]["bam"].values[0],
-        bai = lambda wildcards: samples_df[samples_df["sample"] == wildcards.sample]["bam"].values[0] + ".bai",
+        bam = lambda wildcards: samples_df[samples_df["sample"] == wildcards.sample]["path"].values[0],
+        bai = lambda wildcards: samples_df[samples_df["sample"] == wildcards.sample]["path"].values[0] + ".bai",
         ref = config["reference_genome"]
     output:
-        table = f"{OUTDIR}/{{sample}}/{{sample}}.table.txt",
-        log = f"{OUTDIR}/{{sample}}/{{sample}}.tldr.log"
+        table = f"{OUTDIR}/{{sample}}/{{sample}}.table.txt"
     params:
         te_ref = config.get("te_reference", "/opt/tldr/ref/teref.ont.human.fa"),
         nonref = lambda wildcards: f"-n {config['nonref_collection']}" if config.get('nonref_collection') else "",
         extra = config.get("tldr_params", ""),
-        outbase = lambda wildcards: f"{OUTDIR}/{wildcards.sample}/{wildcards.sample}",
-        procs = config.get("threads", 4)
+        outbase = lambda wildcards: f"{OUTDIR}/{wildcards.sample}/{wildcards.sample}"
     threads: config.get("threads", 4)
     resources:
-        mem_mb = config.get("memory_mb", 16000),
-        runtime = config.get("runtime_min", 240)
+        mem_mb_per_cpu = config.get("mem_mb_per_cpu", 8000),
+        runtime = config.get("runtime", 240),
+        slurm_partition = config.get("slurm_partition", "componc_cpu"),
+        slurm_account = config.get("slurm_account", "greenbab"),
+        nodes = 1
+    container: TLDR_CONTAINER
     log:
         f"{OUTDIR}/logs/{{sample}}.tldr.log"
     shell:
@@ -67,9 +70,6 @@ rule tldr_detect:
             {params.extra} \
             --color_consensus \
             2>&1 | tee {log}
-
-        # Copy log to output directory
-        cp {log} {output.log}
         """
 
 rule index_bam:
@@ -81,6 +81,13 @@ rule index_bam:
     output:
         bai = "{file}.bam.bai"
     threads: 1
+    resources:
+        mem_mb_per_cpu = 4000,
+        runtime = 60,
+        slurm_partition = "cpushort",
+        slurm_account = config.get("slurm_account", "greenbab"),
+        nodes = 1
+    container: TLDR_CONTAINER
     shell:
         """
         samtools index {input.bam}
@@ -100,6 +107,7 @@ rule merge_results:
         merged = f"{OUTDIR}/summary/all_samples.merged.txt"
     params:
         samples = SAMPLES
+    container: TLDR_CONTAINER
     run:
         import pandas as pd
 
@@ -121,6 +129,7 @@ rule summary_stats:
     output:
         stats = f"{OUTDIR}/summary/summary_stats.txt",
         counts = f"{OUTDIR}/summary/insertion_counts_per_sample.txt"
+    container: TLDR_CONTAINER
     run:
         import pandas as pd
 

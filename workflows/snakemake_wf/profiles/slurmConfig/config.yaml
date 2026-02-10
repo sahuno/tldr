@@ -1,0 +1,104 @@
+# ================================================================================
+# Snakemake SLURM Profile for tldr Workflow
+# Matches greenbab cluster configuration patterns
+# ================================================================================
+
+# Executor
+executor: slurm
+
+# Default SLURM resources for all rules
+default-resources:
+    slurm_partition: "cpushort"
+    slurm_account: "greenbab"
+    runtime: 30              # minutes
+    mem_mb_per_cpu: 32000
+    cpus_per_task: 8
+    nodes: 1
+
+# Rule-specific resource allocations
+set-resources:
+    # Main tldr detection - longer runtime, moderate resources
+    tldr_detect:
+        slurm_partition: "componc_cpu"
+        slurm_account: "greenbab"
+        nodes: 1
+        runtime: 240         # 4 hours
+        mem_mb_per_cpu: 24000
+        cpus_per_task: 4
+
+    # BAM indexing - quick jobs
+    index_bam:
+        slurm_partition: "cpushort"
+        slurm_account: "greenbab"
+        nodes: 1
+        runtime: 60          # 1 hour
+        mem_mb_per_cpu: 8000
+        cpus_per_task: 2
+
+    # Summary and merging - lightweight
+    merge_results:
+        slurm_partition: "cpushort"
+        slurm_account: "greenbab"
+        nodes: 1
+        runtime: 30
+        mem_mb_per_cpu: 8000
+        cpus_per_task: 2
+
+    summary_stats:
+        slurm_partition: "cpushort"
+        slurm_account: "greenbab"
+        nodes: 1
+        runtime: 30
+        mem_mb_per_cpu: 8000
+        cpus_per_task: 2
+
+# ================================================================================
+# Execution Settings
+# ================================================================================
+
+# Maximum number of parallel jobs
+jobs: unlimited
+
+# Keep going if some jobs fail
+keep-going: True
+
+# Keep incomplete output files for debugging
+keep-incomplete: True
+
+# Rerun incomplete jobs from previous runs
+rerun-incomplete: True
+
+# Print shell commands being executed
+printshellcmds: True
+
+# ================================================================================
+# Singularity/Apptainer Settings
+# ================================================================================
+
+# Use Singularity containers
+use-singularity: True
+
+# Singularity bind mounts
+# Adjust this to match your data locations
+singularity-args: "--bind /data1/greenbab"
+
+# ================================================================================
+# Additional Settings
+# ================================================================================
+
+# Wait time for filesystem operations (seconds)
+latency-wait: 360
+
+# Status check rate limiting
+max-status-checks-per-second: 1
+
+# Conda environment (not used with container-only workflow)
+# use-conda: False
+
+# ================================================================================
+# Cluster Job Submission
+# ================================================================================
+
+# SLURM uses the built-in executor plugin
+# Resource specifications are passed via the resources directive in rules
+# https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/slurm.html

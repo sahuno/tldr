@@ -1,0 +1,74 @@
+# ================================================================================
+# Container Registry for tldr Workflow
+# Matches sahuno container configuration patterns
+# ================================================================================
+
+# Local container paths (if pre-pulled)
+LOCAL_SOFTWARE_PATH_PERSONAL: "/data1/greenbab/users/ahunos/apps/containers/"
+LOCAL_SOFTWARE_PATH_GROUP: "/data1/greenbab/software/images"
+
+# Repository information
+DOCKERHUB_USERNAME: "sahuno"
+DOCKERHUB_personal_repo: "https://hub.docker.com/repositories/sahuno"
+GITHUB_USERNAME: "sahuno"
+GITHUB_repo: "https://github.com/sahuno/tldr"
+
+# ================================================================================
+# Container Definitions
+# ================================================================================
+
+CONTAINERS:
+  # tldr - Transposable Element Detection
+  - name: "tldr Latest - TE detection from long reads (ONT/PacBio)"
+    value: "sahuno/tldr:latest"
+    tools:
+      - tldr
+      - samtools
+      - minimap2
+      - mafft
+      - exonerate
+      - python (numpy, pysam, scikit-learn, tqdm)
+    version: "1.3.0"
+    reference_data:
+      - "/opt/tldr/ref/teref.ont.human.fa"
+      - "/opt/tldr/ref/teref.human.fa"
+      - "/opt/tldr/ref/teref.mouse.fa"
+      - "/opt/tldr/ref/nonref.collection.*.bed.gz"
+
+  - name: "tldr v1.2.2 - TE detection (stable release)"
+    value: "sahuno/tldr:1.2.2"
+    tools:
+      - tldr
+      - samtools
+      - minimap2
+      - mafft
+      - exonerate
+    version: "1.2.2"
+
+# ================================================================================
+# Usage in Snakemake
+# ================================================================================
+
+# Global container (in Snakefile):
+#   container: "docker://sahuno/tldr:latest"
+#
+# Per-rule container (recommended):
+#   rule my_rule:
+#       container: "docker://sahuno/tldr:latest"
+#       ...
+#
+# Local SIF file (if pre-pulled):
+#   container: "/data1/greenbab/software/images/tldr_latest.sif"
+
+# ================================================================================
+# Container Pull Commands
+# ================================================================================
+
+# Pull with Singularity:
+#   singularity pull docker://sahuno/tldr:latest
+#
+# Pull with Docker:
+#   docker pull sahuno/tldr:latest
+#
+# Convert Docker to Singularity manually:
+#   singularity build tldr_latest.sif docker://sahuno/tldr:latest

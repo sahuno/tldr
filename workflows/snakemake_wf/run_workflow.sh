@@ -1,28 +1,30 @@
 #!/bin/bash
 
 # Snakemake workflow execution script for tldr
-# Usage: ./run_workflow.sh [local|slurm|sge] [cores]
+# Usage: ./run_workflow.sh [profile] [additional_args]
 
 set -e
 
-MODE=${1:-local}
-CORES=${2:-8}
+PROFILE=${1:-slurmConfig}
+shift || true
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${GREEN}================================${NC}"
 echo -e "${GREEN}tldr Snakemake Workflow${NC}"
+echo -e "${GREEN}Container-only Execution${NC}"
 echo -e "${GREEN}================================${NC}"
 echo ""
 
 # Check if samples.tsv exists
 if [ ! -f "samples.tsv" ]; then
     echo -e "${RED}Error: samples.tsv not found!${NC}"
-    echo "Please create samples.tsv with your sample information"
+    echo "Please create samples.tsv with columns: patient, sample, condition, path, genome"
     exit 1
 fi
 
@@ -34,74 +36,48 @@ fi
 
 # Validate samples file
 echo -e "${YELLOW}Validating samples file...${NC}"
-if [ $(wc -l < samples.tsv) -lt 2 ]; then
+SAMPLE_COUNT=$(( $(wc -l < samples.tsv) - 1 ))
+if [ $SAMPLE_COUNT -lt 1 ]; then
     echo -e "${RED}Error: samples.tsv appears to be empty or has no samples${NC}"
     exit 1
 fi
 
-echo -e "${GREEN}✓${NC} Found $(( $(wc -l < samples.tsv) - 1 )) samples"
+echo -e "${GREEN}✓${NC} Found $SAMPLE_COUNT samples"
 echo ""
 
-# Run based on mode
-case $MODE in
-    local)
-        echo -e "${YELLOW}Running workflow locally with ${CORES} cores${NC}"
-        echo ""
-        snakemake \
-            --use-singularity \
-            --cores $CORES \
-            --printshellcmds \
-            --rerun-incomplete
-        ;;
+# Check profile
+if [ ! -d "profiles/${PROFILE}" ]; then
+    echo -e "${RED}Error: Profile 'profiles/${PROFILE}' not found!${NC}"
+    echo ""
+    echo "Available profiles:"
+    echo "  - slurmConfig  (full SLURM configuration with resource optimization)"
+    echo "  - slurmMinimal (minimal SLURM configuration for quick jobs)"
+    echo ""
+    echo "Usage: $0 [profile] [additional_args]"
+    echo ""
+    echo "Examples:"
+    echo "  $0 slurmConfig           # Run with full SLURM config"
+    echo "  $0 slurmMinimal          # Run with minimal SLURM config"
+    echo "  $0 slurmConfig -n        # Dry run"
+    echo "  $0 slurmConfig --cores 4 # Override with local execution"
+    exit 1
+fi
 
-    slurm)
-        echo -e "${YELLOW}Running workflow on SLURM cluster${NC}"
-        echo ""
+echo -e "${BLUE}Profile: ${PROFILE}${NC}"
+echo -e "${BLUE}SLURM Account: greenbab${NC}"
+echo -e "${BLUE}Container: docker://sahuno/tldr:latest${NC}"
+echo ""
 
-        # Create SLURM logs directory
-        mkdir -p logs/slurm
+# Create logs directory for SLURM
+mkdir -p results/logs
 
-        snakemake \
-            --profile profiles/slurm \
-            --printshellcmds \
-            --rerun-incomplete
-        ;;
+# Run Snakemake with profile
+echo -e "${YELLOW}Launching Snakemake workflow...${NC}"
+echo ""
 
-    sge)
-        echo -e "${YELLOW}Running workflow on SGE cluster${NC}"
-        echo ""
-
-        snakemake \
-            --use-singularity \
-            --cluster "qsub -pe smp {threads} -l mem_free={resources.mem_mb}M -o logs/sge -e logs/sge" \
-            --jobs 50 \
-            --printshellcmds \
-            --rerun-incomplete
-        ;;
-
-    dryrun)
-        echo -e "${YELLOW}Performing dry run...${NC}"
-        echo ""
-        snakemake \
-            --use-singularity \
-            --cores $CORES \
-            --dryrun \
-            --printshellcmds
-        ;;
-
-    *)
-        echo -e "${RED}Error: Unknown mode '$MODE'${NC}"
-        echo ""
-        echo "Usage: $0 [local|slurm|sge|dryrun] [cores]"
-        echo ""
-        echo "Examples:"
-        echo "  $0 local 8          # Run locally with 8 cores"
-        echo "  $0 slurm            # Run on SLURM cluster"
-        echo "  $0 sge              # Run on SGE cluster"
-        echo "  $0 dryrun           # Dry run to check workflow"
-        exit 1
-        ;;
-esac
+snakemake \
+    --profile profiles/${PROFILE} \
+    "$@"
 
 # Check exit status
 if [ $? -eq 0 ]; then
@@ -111,7 +87,10 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN}================================${NC}"
     echo ""
     echo "Results available in: results/"
-    echo "Summary: results/summary/"
+    echo "  - Individual samples: results/*/sample*.table.txt"
+    echo "  - Merged results: results/summary/all_samples.merged.txt"
+    echo "  - Summary stats: results/summary/summary_stats.txt"
+    echo "  - Insertion counts: results/summary/insertion_counts_per_sample.txt"
 else
     echo ""
     echo -e "${RED}================================${NC}"

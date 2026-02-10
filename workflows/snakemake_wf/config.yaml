@@ -1,8 +1,9 @@
 # ================================================================================
 # tldr Snakemake Workflow Configuration
+# Container-only execution with Singularity
 # ================================================================================
 
-# Samples file (TSV format with columns: sample, bam)
+# Samples file (TSV format with columns: patient, sample, condition, path, genome)
 samples: "samples.tsv"
 
 # Output directory for results
@@ -13,24 +14,25 @@ outdir: "results"
 # ================================================================================
 
 # Reference genome (FASTA, must be indexed with samtools faidx)
+# This should match the 'genome' column in samples.tsv
 reference_genome: "/path/to/reference/genome.fa"
 
-# TE reference file
+# TE reference file (inside container)
 # Options:
-#   - /opt/tldr/ref/teref.ont.human.fa  (ONT-optimized human)
+#   - /opt/tldr/ref/teref.ont.human.fa  (ONT-optimized human) [RECOMMENDED]
 #   - /opt/tldr/ref/teref.human.fa      (standard human)
 #   - /opt/tldr/ref/teref.mouse.fa      (mouse)
 te_reference: "/opt/tldr/ref/teref.ont.human.fa"
 
-# Non-reference collection (optional)
+# Non-reference collection (optional, inside container)
 # Set to null or comment out if not using
 # Options:
-#   - /opt/tldr/ref/nonref.collection.hg38.chr.bed.gz
-#   - /opt/tldr/ref/nonref.collection.hg38.bed.gz
-#   - /opt/tldr/ref/nonref.collection.hg19.chr.bed.gz
-#   - /opt/tldr/ref/nonref.collection.hg19.bed.gz
-#   - /opt/tldr/ref/nonref.collection.mm10.chr.bed.gz
-#   - /opt/tldr/ref/nonref.collection.mm10.bed.gz
+#   - /opt/tldr/ref/nonref.collection.hg38.chr.bed.gz   (hg38 with chr prefix)
+#   - /opt/tldr/ref/nonref.collection.hg38.bed.gz       (hg38 without chr)
+#   - /opt/tldr/ref/nonref.collection.hg19.chr.bed.gz   (hg19 with chr prefix)
+#   - /opt/tldr/ref/nonref.collection.hg19.bed.gz       (hg19 without chr)
+#   - /opt/tldr/ref/nonref.collection.mm10.chr.bed.gz   (mm10 with chr prefix)
+#   - /opt/tldr/ref/nonref.collection.mm10.bed.gz       (mm10 without chr)
 nonref_collection: null  # "/opt/tldr/ref/nonref.collection.hg38.chr.bed.gz"
 
 # ================================================================================
@@ -38,21 +40,29 @@ nonref_collection: null  # "/opt/tldr/ref/nonref.collection.hg38.chr.bed.gz"
 # ================================================================================
 
 # Docker/Singularity container image
-# Will be pulled from DockerHub automatically
+# Will be pulled from DockerHub and cached by Snakemake
 container: "docker://sahuno/tldr:latest"
 
 # ================================================================================
-# Computational Resources
+# SLURM Resource Defaults
 # ================================================================================
+# These are used when running with the slurmConfig profile
+# Can be overridden in the profile or per-rule in set-resources
 
-# Number of threads per tldr job
+# SLURM account
+slurm_account: "greenbab"
+
+# Default partition
+slurm_partition: "componc_cpu"
+
+# Threads per job
 threads: 4
 
-# Memory per job (MB)
-memory_mb: 16000
+# Memory per CPU (MB)
+mem_mb_per_cpu: 8000
 
 # Runtime per job (minutes)
-runtime_min: 240
+runtime: 240
 
 # ================================================================================
 # tldr Parameters
@@ -60,12 +70,14 @@ runtime_min: 240
 
 # Additional tldr parameters
 # Examples:
-#   --minreads 3              # Minimum read count to form cluster
-#   --min_te_len 200          # Minimum insertion size
-#   --max_te_len 10000        # Maximum insertion size
-#   --detail_output           # Output per-insertion BAMs
-#   --strict                  # Additional filters
-#   --somatic                 # Predict somatic insertions
+#   --minreads 3              # Minimum read count to form cluster (default: 3)
+#   --min_te_len 200          # Minimum insertion size (default: 200)
+#   --max_te_len 10000        # Maximum insertion size (default: 10000)
+#   --detail_output           # Output per-insertion BAMs and mapping info
+#   --strict                  # Apply additional filters
+#   --somatic                 # Predict somatic insertions (enables --strict)
+#   --trdcol                  # Add columns for transduction mapping
+#   --methylartist            # Generate methylartist commands (requires --detail_output)
 tldr_params: ""
 
 # ================================================================================

@@ -1,0 +1,31 @@
+# ================================================================================
+# Minimal Snakemake SLURM Profile for tldr Workflow
+# Quick setup with conservative resource requests
+# ================================================================================
+
+# Executor
+executor: slurm
+
+# Default resources - conservative for quick jobs
+default-resources:
+    slurm_partition: "cpushort"
+    slurm_account: "greenbab"
+    runtime: 60              # 1 hour
+    mem_mb_per_cpu: 16000
+    cpus_per_task: 4
+    nodes: 1
+
+# Execution settings
+jobs: 50                     # Limit concurrent jobs
+keep-going: True
+keep-incomplete: True
+rerun-incomplete: True
+printshellcmds: True
+
+# Singularity settings
+use-singularity: True
+singularity-args: "--bind /data1/greenbab"
+
+# Latency and status checks
+latency-wait: 180
+max-status-checks-per-second: 1
