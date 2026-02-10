@@ -68,6 +68,12 @@ rule tldr_detect:
             -p {threads} \
             {params.nonref} \
             {params.extra} \
+            --min_te_len 100 \
+            --max_cluster_size 100 \
+            --trdcol \
+            --detail_output \
+            --methylartist \
+            --keep_pickles \
             --color_consensus \
             2>&1 | tee {log}
         """

@@ -68,16 +68,25 @@ runtime: 240
 # tldr Parameters
 # ================================================================================
 
-# Additional tldr parameters
-# Examples:
-#   --minreads 3              # Minimum read count to form cluster (default: 3)
-#   --min_te_len 200          # Minimum insertion size (default: 200)
-#   --max_te_len 10000        # Maximum insertion size (default: 10000)
+# Default parameters (built into workflow):
+#   --min_te_len 100          # Minimum insertion size (workflow default)
+#   --max_cluster_size 100    # Limit cluster size with embed-biased downsampling
+#   --trdcol                  # Add columns for transduction mapping
 #   --detail_output           # Output per-insertion BAMs and mapping info
+#   --methylartist            # Generate methylartist commands
+#   --keep_pickles            # Keep per-chromosome pickle files
+#   --color_consensus         # Add color to consensus sequences
+#   -p {threads}              # Use specified thread count
+
+# Additional tldr parameters (override or extend defaults)
+# Common options:
+#   --minreads 5              # Minimum read count to form cluster (default: 3)
+#   --min_te_len 200          # Override minimum insertion size
+#   --max_te_len 10000        # Maximum insertion size (default: 10000)
 #   --strict                  # Apply additional filters
 #   --somatic                 # Predict somatic insertions (enables --strict)
-#   --trdcol                  # Add columns for transduction mapping
-#   --methylartist            # Generate methylartist commands (requires --detail_output)
+#   --wiggle 50               # Interval padding for breakpoint search (default: 50)
+#   --flanksize 500           # Flank size for read trimming (default: 500)
 tldr_params: ""
 
 # ================================================================================
