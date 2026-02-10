@@ -1,6 +1,2 @@
 patient	sample	condition	path	genome
-patientA	patientA_tumor	tumor	/path/to/patientA_tumor_ONT.bam	hg38
-patientA	patientA_normal	normal	/path/to/patientA_normal_ONT.bam	hg38
-patientB	patientB_tumor	tumor	/path/to/patientB_tumor_ONT.bam	hg38
-patientB	patientB_normal	normal	/path/to/patientB_normal_ONT.bam	hg38
-patientC	patientC_control	control	/path/to/patientC_control_ONT.bam	hg38
+SU2C-118	SU2C-118_TS-1963991T_On1L_LRWGS_17337_4_1	tumor	/data1/collab001/janjigian_su2c/WGS-ONT/sam/DNAme_prod/results/IRIS_files/results/methylation_basecalling/mark_duplicates/SU2C-118_TS-1963991T_On1L_LRWGS_17337_4_1/SU2C-118_TS-1963991T_On1L_LRWGS_17337_4_1_modBaseCalls_dedup_sorted.bam	hg38

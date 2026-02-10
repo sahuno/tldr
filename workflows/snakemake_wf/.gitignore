@@ -23,3 +23,13 @@ slurm-*.out
 
 # Benchmarks
 benchmarks/
+
+# Generated plots (reproducible from scripts)
+docs/methylartist_plots/*.png
+
+# Derived annotation files (reproducible from gencode GTF)
+docs/methylartist_plots/*.gtf.gz
+docs/methylartist_plots/*.gtf.gz.tbi
+
+# Scratch notes
+scratch_snakemake.md

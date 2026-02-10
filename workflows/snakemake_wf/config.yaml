@@ -25,7 +25,7 @@ outdir: "results"
 
 # Reference genome (FASTA, must be indexed with samtools faidx)
 # This should match the 'genome' column in samples.tsv
-reference_genome: "/path/to/reference/genome.fa"
+reference_genome: "/data1/greenbab/database/hg38/v0/Homo_sapiens_assembly38.fasta"
 
 # TE reference file (inside container)
 # Options:
@@ -43,7 +43,7 @@ te_reference: "/opt/tldr/ref/teref.ont.human.fa"
 #   - /opt/tldr/ref/nonref.collection.hg19.bed.gz       (hg19 without chr)
 #   - /opt/tldr/ref/nonref.collection.mm10.chr.bed.gz   (mm10 with chr prefix)
 #   - /opt/tldr/ref/nonref.collection.mm10.bed.gz       (mm10 without chr)
-nonref_collection: null  # "/opt/tldr/ref/nonref.collection.hg38.chr.bed.gz"
+nonref_collection: "/opt/tldr/ref/nonref.collection.hg38.chr.bed.gz"
 
 # ================================================================================
 # Container Settings
@@ -51,7 +51,7 @@ nonref_collection: null  # "/opt/tldr/ref/nonref.collection.hg38.chr.bed.gz"
 
 # Docker/Singularity container image
 # Will be pulled from DockerHub and cached by Snakemake
-container: "docker://sahuno/tldr:latest"
+container: "/data1/greenbab/software/images/tldr_latest.sif"
 
 # ================================================================================
 # SLURM Resource Defaults
@@ -98,7 +98,7 @@ runtime: 240
 #   --somatic                 # Predict somatic insertions (enables --strict)
 #   --wiggle 50               # Interval padding for breakpoint search (default: 50)
 #   --flanksize 500           # Flank size for read trimming (default: 500)
-tldr_params: ""
+tldr_params: "--somatic"
 
 # ================================================================================
 # Workflow Options

@@ -71,12 +71,6 @@ rule tldr_detect:
         outbase = lambda wildcards: f"{OUTDIR}/{wildcards.patient}/{wildcards.patient}",
         bam_list = get_bam_list
     threads: config.get("threads", 4)
-    resources:
-        mem_mb_per_cpu = config.get("mem_mb_per_cpu", 8000),
-        runtime = config.get("runtime", 240),
-        slurm_partition = config.get("slurm_partition", "componc_cpu"),
-        slurm_account = config.get("slurm_account", "greenbab"),
-        nodes = 1
     container: TLDR_CONTAINER
     log:
         f"{OUTDIR}/logs/{{patient}}.tldr.log"
@@ -110,12 +104,6 @@ rule index_bam:
     output:
         bai = "{file}.bam.bai"
     threads: 1
-    resources:
-        mem_mb_per_cpu = 4000,
-        runtime = 60,
-        slurm_partition = "cpushort",
-        slurm_account = config.get("slurm_account", "greenbab"),
-        nodes = 1
     container: TLDR_CONTAINER
     shell:
         """

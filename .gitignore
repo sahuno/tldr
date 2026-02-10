@@ -5,3 +5,6 @@ __pycache__/
 .pytest_cache/
 dist/
 build/
+
+# Stray methylartist output at repo root
+*.locus.meth.png

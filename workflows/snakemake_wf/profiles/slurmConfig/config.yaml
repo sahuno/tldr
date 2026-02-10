@@ -7,11 +7,12 @@
 executor: slurm
 
 # Default SLURM resources for all rules
+# Using mem_mb (total memory) only — do NOT mix with mem_mb_per_cpu (causes SLURM conflict)
 default-resources:
     slurm_partition: "cpushort"
     slurm_account: "greenbab"
     runtime: 30              # minutes
-    mem_mb_per_cpu: 32000
+    mem_mb: 64000            # 64 GB total
     cpus_per_task: 8
     nodes: 1
 
@@ -23,7 +24,7 @@ set-resources:
         slurm_account: "greenbab"
         nodes: 1
         runtime: 240         # 4 hours
-        mem_mb_per_cpu: 24000
+        mem_mb: 96000        # 96 GB total (4 CPUs x 24 GB)
         cpus_per_task: 4
 
     # BAM indexing - quick jobs
@@ -32,7 +33,7 @@ set-resources:
         slurm_account: "greenbab"
         nodes: 1
         runtime: 60          # 1 hour
-        mem_mb_per_cpu: 8000
+        mem_mb: 16000        # 16 GB total (2 CPUs x 8 GB)
         cpus_per_task: 2
 
     # Summary and merging - lightweight
@@ -41,7 +42,7 @@ set-resources:
         slurm_account: "greenbab"
         nodes: 1
         runtime: 30
-        mem_mb_per_cpu: 8000
+        mem_mb: 16000        # 16 GB total
         cpus_per_task: 2
 
     summary_stats:
@@ -49,7 +50,7 @@ set-resources:
         slurm_account: "greenbab"
         nodes: 1
         runtime: 30
-        mem_mb_per_cpu: 8000
+        mem_mb: 16000        # 16 GB total
         cpus_per_task: 2
 
 # ================================================================================
@@ -75,12 +76,13 @@ printshellcmds: True
 # Singularity/Apptainer Settings
 # ================================================================================
 
-# Use Singularity containers
-use-singularity: True
+# Software deployment method (Snakemake 9+ syntax, replaces use-singularity)
+software-deployment-method:
+    - apptainer
 
-# Singularity bind mounts
-# Adjust this to match your data locations
-singularity-args: "--bind /data1/greenbab"
+# Apptainer/Singularity bind mounts and environment
+# Adjust bind paths to match your data locations
+apptainer-args: "--bind /data1/greenbab,/data1/collab001 --env PATH=/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # ================================================================================
 # Additional Settings
