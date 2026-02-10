@@ -1,0 +1,45 @@
+# Git files
+.git/
+.gitignore
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Test outputs
+test/test.table.txt
+test/*.pickle
+*.pickle
+
+# Documentation
+*.md
+HANDOFF_NOTE.md
+INSTALLATION_ISSUE.md
+README.md
+
+# Docker files
+Dockerfile
+.dockerignore
+docker_build.sh
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
