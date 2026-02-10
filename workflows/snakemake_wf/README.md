@@ -7,7 +7,8 @@ A Snakemake workflow for detecting transposable element insertions from long-rea
 ## Features
 
 - 🐳 **Container-only execution** - No local software installation required
-- 🔄 **Parallel processing** of multiple samples
+- 🔄 **Parallel processing** of multiple patients
+- 👥 **Paired sample support** - Tumor/normal, case/control, timepoints
 - 📦 **Singularity/Apptainer** integration with automatic Docker conversion
 - 🖥️ **SLURM cluster** optimized with greenbab account configuration
 - 📊 **Automatic result merging** and summary statistics
@@ -37,11 +38,26 @@ patient2	sample3	control	/data1/greenbab/data/sample3.bam	hg38
 ```
 
 **Columns:**
-- `patient` - Patient identifier
+- `patient` - Patient identifier (samples grouped by patient)
 - `sample` - Unique sample name
-- `condition` - Experimental condition (control, case, etc.)
+- `condition` - Experimental condition (tumor, normal, control, case, etc.)
 - `path` - Full path to BAM file (must be indexed with .bai)
 - `genome` - Reference genome (hg19, hg38, mm10)
+
+**Paired Sample Analysis:**
+Samples with the same `patient` ID are analyzed together. This enables:
+- **Tumor/Normal pairs**: Compare somatic vs germline insertions
+- **Case/Control**: Compare disease vs healthy samples
+- **Timepoints**: Track TE insertions over time
+
+Example for tumor/normal pairs:
+```tsv
+patient	sample	condition	path	genome
+patientA	patientA_tumor	tumor	/data/tumor.bam	hg38
+patientA	patientA_normal	normal	/data/normal.bam	hg38
+```
+
+tldr will receive: `--bams /data/tumor.bam,/data/normal.bam`
 
 ### 3. Configure Workflow
 

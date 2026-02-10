@@ -1,4 +1,6 @@
 patient	sample	condition	path	genome
-patient1	sample1	control	/path/to/sample1.bam	hg38
-patient2	sample2	case	/path/to/sample2.bam	hg38
-patient3	sample3	control	/path/to/sample3.bam	hg38
+patientA	patientA_tumor	tumor	/path/to/patientA_tumor_ONT.bam	hg38
+patientA	patientA_normal	normal	/path/to/patientA_normal_ONT.bam	hg38
+patientB	patientB_tumor	tumor	/path/to/patientB_tumor_ONT.bam	hg38
+patientB	patientB_normal	normal	/path/to/patientB_normal_ONT.bam	hg38
+patientC	patientC_control	control	/path/to/patientC_control_ONT.bam	hg38

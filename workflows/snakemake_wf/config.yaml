@@ -1,9 +1,19 @@
 # ================================================================================
 # tldr Snakemake Workflow Configuration
 # Container-only execution with Singularity
+# Supports paired/multiple BAMs per patient
 # ================================================================================
 
 # Samples file (TSV format with columns: patient, sample, condition, path, genome)
+# Samples are grouped by patient - all BAMs for the same patient are analyzed together
+# This enables tumor/normal comparisons, case/control pairs, timepoint analysis, etc.
+#
+# Example for paired tumor/normal:
+#   patient	sample	condition	path	genome
+#   patientA	patientA_tumor	tumor	/path/to/tumor.bam	hg38
+#   patientA	patientA_normal	normal	/path/to/normal.bam	hg38
+#
+# tldr will receive: --bams /path/to/tumor.bam,/path/to/normal.bam
 samples: "samples.tsv"
 
 # Output directory for results
