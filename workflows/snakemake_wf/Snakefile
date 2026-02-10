@@ -94,6 +94,7 @@ rule tldr_detect:
             --max_cluster_size 100 \
             --trdcol \
             --detail_output \
+            --extend_consensus 5000 \
             --methylartist \
             --keep_pickles \
             --color_consensus \

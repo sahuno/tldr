@@ -83,6 +83,7 @@ runtime: 240
 #   --max_cluster_size 100    # Limit cluster size with embed-biased downsampling
 #   --trdcol                  # Add columns for transduction mapping
 #   --detail_output           # Output per-insertion BAMs and mapping info
+#   --extend_consensus 5000   # Extend per-sample consensus by 5kb (requires --detail_output)
 #   --methylartist            # Generate methylartist commands
 #   --keep_pickles            # Keep per-chromosome pickle files
 #   --color_consensus         # Add color to consensus sequences
